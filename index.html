@@ -7,11 +7,9 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 0;
-      padding: 0;
     }
     header {
-      background: #008542; /* verde Unimed */
+      background: #008542;
       padding: 20px;
     }
     header img {
@@ -28,6 +26,7 @@
       text-decoration: none;
       border-radius: 5px;
       font-weight: bold;
+      cursor: pointer;
     }
     .btn:hover {
       background: #006b34;
@@ -53,32 +52,38 @@
 
   <main>
     <h1>Bem-vindo ao Chatbot da Unimed</h1>
-    <p>Clique abaixo para iniciar o atendimento:</p>
-    <a class="btn" href="https://chatbot.unimedsc.com.br/chatclient/chat.php?ci=cliente&amp;servico=CHATBOT_SITE_ALICE&amp;da=&amp;url=&amp;css=https://chatbot.unimedsc.com.br/chatbot.css&amp;aplicacao=persona" target="_blank">
-      Clique aqui
+    <p>Clique abaixo para falar com a <b>Alice</b>:</p>
+    <a class="btn" href="javascript:void(0);" onclick="open_chat_window('68a46e661790425f4016a228')">
+      Falar com a Alice
     </a>
   </main>
 
   <div id="div_chatbot">
-    <a href="javascript:void(0);" onclick="open_chat_window()">
+    <a href="javascript:void(0);" onclick="open_chat_window('673f883adc527a52ff1ae5c9')">
       <img title="Olá, sou a Lara! Posso te ajudar?" 
            src="https://www.unimed.coop.br/site/documents/4195185/0/lara.png/28fd2d03-20d4-cba3-0117-f8d2f6446082?t=1649783866815">
     </a>
   </div>
 
+  <!-- Script do Chat Omni -->
   <script>
-    let chatWindow; // referência da janela do chat
+    (function(w, d, s, u) {
+      w.UC2BChat = function(c) { w.UC2BChat._.push(c) };
+      w.UC2BChat._ = [];
+      w.UC2BChat.url = u;
+      var h = d.getElementsByTagName(s)[0], j = d.createElement(s);
+      j.async = true;
+      j.src = "https://unimedomni.cloudcanal.com.br/livechat/livechat.min.js";
+      h.parentNode.insertBefore(j, h);
+    })(window, document, 'script', "https://unimedomni.cloudcanal.com.br/livechat");
+  </script>
 
-    function open_chat_window() {
-      if (!chatWindow || chatWindow.closed) {
-        chatWindow = window.open(
-          "https://chatbot.unimedsc.com.br/chatclient/chat.php?ci=cliente&servico=FESC_URACHAT&da=&url=&css=https://chatbot.unimedsc.com.br/chatbot.css&aplicacao=persona",
-          "chat_window",
-          "width=500,height=550"
-        );
-      } else {
-        chatWindow.focus();
-      }
+  <script>
+    function open_chat_window(flowId) {
+      UC2BChat(function() {
+        this.setLinkedToFlow(flowId);
+        this.open();
+      });
     }
   </script>
 
