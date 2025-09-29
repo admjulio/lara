@@ -1,36 +1,67 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Chatbot Unimed</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat Unimed – Lara & Alice</title>
   <style>
+    :root {
+      --unimed-green: #008542;
+      --unimed-green-dark: #006b34;
+      --bg: #f6f7f9;
+      --text: #111;
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
       text-align: center;
     }
     header {
-      background: #008542;
-      padding: 20px;
+      background: var(--unimed-green);
+      padding: 16px 20px;
     }
-    header img {
-      max-height: 60px;
-    }
+    header img { max-height: 56px; }
     main {
-      padding: 40px;
+      padding: 36px 20px 80px;
+      max-width: 900px;
+      margin: 0 auto;
     }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p  { margin: 0 0 24px; }
     .btn {
       display: inline-block;
       padding: 12px 24px;
-      background: #008542;
+      border-radius: 6px;
+      background: var(--unimed-green);
       color: #fff;
       text-decoration: none;
-      border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
+      border: 0;
+      transition: filter .2s ease, background .2s ease;
+      user-select: none;
     }
-    .btn:hover {
-      background: #006b34;
+    .btn:hover { background: var(--unimed-green-dark); }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      align-items: start;
+      justify-items: center;
     }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06);
+      text-align: left;
+      width: 100%;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 18px; }
+    .card p  { margin: 0 0 16px; color: #333; }
     #div_chatbot {
       position: fixed;
       z-index: 100000;
@@ -38,34 +69,58 @@
       right: 15px;
     }
     #div_chatbot img {
-      width: 200px;
-      height: 200px;
+      width: 180px;
+      height: 180px;
       cursor: pointer;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,.2));
+      transition: transform .15s ease;
+    }
+    #div_chatbot img:hover { transform: scale(1.03); }
+    footer {
+      margin: 40px 0 20px;
+      font-size: 12px;
+      color: #555;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <img src="https://www.unimed.coop.br/site/image/layout_set_logo?img_id=1300085" alt="Unimed">
+    <img src="https://www.unimed.coop.br/site/image/layout_set_logo?img_id=1300085" alt="Unimed" />
   </header>
 
   <main>
-    <h1>Bem-vindo ao Chatbot da Unimed</h1>
-    <p>Clique abaixo para falar com a <b>Alice</b>:</p>
-    <a class="btn" href="javascript:void(0);" onclick="open_chat_window('68a46e661790425f4016a228')">
-      Falar com a Alice
-    </a>
+    <h1>Atendimento Digital</h1>
+    <p>Escolha como deseja iniciar o atendimento:</p>
+
+    <div class="grid" role="list">
+      <section class="card" role="listitem" aria-labelledby="card-alice-title">
+        <h2 id="card-alice-title">Falar com a Alice</h2>
+        <p>Clique para abrir o fluxo da Alice.</p>
+        <a
+          class="btn"
+          href="javascript:void(0);"
+          id="btn-alice"
+        >Abrir chat da Alice</a>
+      </section>
+    </div>
   </main>
 
+  <!-- Lara fixa no canto -->
   <div id="div_chatbot">
-    <a href="javascript:void(0);" onclick="open_chat_window('673f883adc527a52ff1ae5c9')">
-      <img title="Olá, sou a Lara! Posso te ajudar?" 
-           src="https://www.unimed.coop.br/site/documents/4195185/0/lara.png/28fd2d03-20d4-cba3-0117-f8d2f6446082?t=1649783866815">
+    <a href="javascript:void(0);" id="btn-lara">
+      <img
+        src="https://www.unimed.coop.br/site/documents/4195185/0/lara.png/28fd2d03-20d4-cba3-0117-f8d2f6446082?t=1649783866815"
+        alt="Lara - Assistente virtual"
+      />
     </a>
   </div>
 
-  <!-- Script do Chat Omni -->
+  <footer>
+    <span>© Unimed • Ambiente de testes do widget de chat</span>
+  </footer>
+
+  <!-- Loader oficial do UC2BChat -->
   <script>
     (function(w, d, s, u) {
       w.UC2BChat = function(c) { w.UC2BChat._.push(c) };
@@ -73,19 +128,101 @@
       w.UC2BChat.url = u;
       var h = d.getElementsByTagName(s)[0], j = d.createElement(s);
       j.async = true;
-      j.src = "https://unimedomni.cloudcanal.com.br/livechat/livechat.min.js";
+      j.src = "https://unimedomni.cloudcanal.com.br/livechat/livechat.min.js?_=201903270000";
       h.parentNode.insertBefore(j, h);
     })(window, document, 'script', "https://unimedomni.cloudcanal.com.br/livechat");
   </script>
 
   <script>
-    function open_chat_window(flowId) {
-      UC2BChat(function() {
-        this.setLinkedToFlow(flowId);
-        this.open();
+    function openChatWithFlow(flowId) {
+      if (!window.UC2BChat || typeof window.UC2BChat !== 'function') {
+        console.warn('UC2BChat não está pronto ainda. Tentando novamente em 200ms…');
+        return setTimeout(function(){ openChatWithFlow(flowId); }, 200);
+      }
+
+      UC2BChat(function () {
+        try {
+          if (typeof this.setLinkedToFlow === 'function') {
+            this.setLinkedToFlow(flowId);
+            console.log('Flow setado:', flowId);
+          }
+
+          if (typeof this.openChat === 'function') {
+            this.openChat();
+            console.log('openChat() chamado');
+            return;
+          }
+          if (typeof this.toggle === 'function') {
+            this.toggle(true);
+            console.log('toggle(true) chamado');
+            return;
+          }
+          if (typeof this.show === 'function') {
+            this.show();
+            console.log('show() chamado');
+            return;
+          }
+          if (typeof this.setOpened === 'function') {
+            this.setOpened(true);
+            console.log('setOpened(true) chamado');
+            return;
+          }
+
+          // --- Fallback robusto ---
+          setTimeout(function () {
+            var tries = 0;
+            var interval = setInterval(function () {
+              tries++;
+              var selectors = [
+                '.uc2b-launcher',
+                '[data-uc2bchat-launcher]',
+                '#uc2b-launcher',
+                '.livechat-launcher',
+                '[aria-label="Abrir chat"]',
+                'button[title*="Chat"]',
+                'button[aria-label*="Chat"]'
+              ];
+              var btn = null;
+              for (var i = 0; i < selectors.length; i++) {
+                btn = document.querySelector(selectors[i]);
+                if (btn) break;
+              }
+              if (btn) {
+                btn.click();
+                console.log('Fallback: clique no launcher via', selectors[i]);
+                clearInterval(interval);
+              }
+              if (tries > 20) {
+                clearInterval(interval);
+                console.warn('Fallback: launcher não encontrado após várias tentativas.');
+              }
+            }, 200);
+          }, 200);
+
+        } catch (e) {
+          console.error('Erro ao abrir o chat:', e);
+        }
       });
     }
-  </script>
 
+    // Mapear botões
+    (function bindUI(){
+      var btnAlice = document.getElementById('btn-alice');
+      var btnLara  = document.getElementById('btn-lara');
+
+      if (btnAlice) {
+        btnAlice.addEventListener('click', function (e) {
+          e.preventDefault();
+          openChatWithFlow('68a46e661790425f4016a228'); // Flow da Alice
+        });
+      }
+      if (btnLara) {
+        btnLara.addEventListener('click', function (e) {
+          e.preventDefault();
+          openChatWithFlow('673f883adc527a52ff1ae5c9'); // Flow da Lara
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
