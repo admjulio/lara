@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot Unimed</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #008542; /* verde Unimed */
+      padding: 20px;
+    }
+    header img {
+      max-height: 60px;
+    }
+    main {
+      padding: 40px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #008542;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .btn:hover {
+      background: #006b34;
+    }
+    #div_chatbot {
+      position: fixed;
+      z-index: 100000;
+      bottom: 15px;
+      right: 15px;
+    }
+    #div_chatbot img {
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://www.unimed.coop.br/site/image/layout_set_logo?img_id=1300085" alt="Unimed">
+  </header>
+
+  <main>
+    <h1>Bem-vindo ao Chatbot da Unimed</h1>
+    <p>Clique abaixo para iniciar o atendimento:</p>
+    <a class="btn" href="https://chatbot.unimedsc.com.br/chatclient/chat.php?ci=cliente&amp;servico=CHATBOT_SITE_ALICE&amp;da=&amp;url=&amp;css=https://chatbot.unimedsc.com.br/chatbot.css&amp;aplicacao=persona" target="_blank">
+      Clique aqui
+    </a>
+  </main>
+
+  <div id="div_chatbot">
+    <a href="javascript:void(0);" onclick="open_chat_window()">
+      <img title="Olá, sou a Lara! Posso te ajudar?" 
+           src="https://www.unimed.coop.br/site/documents/4195185/0/lara.png/28fd2d03-20d4-cba3-0117-f8d2f6446082?t=1649783866815">
+    </a>
+  </div>
+
+  <script>
+    let chatWindow; // referência da janela do chat
+
+    function open_chat_window() {
+      if (!chatWindow || chatWindow.closed) {
+        chatWindow = window.open(
+          "https://chatbot.unimedsc.com.br/chatclient/chat.php?ci=cliente&servico=FESC_URACHAT&da=&url=&css=https://chatbot.unimedsc.com.br/chatbot.css&aplicacao=persona",
+          "chat_window",
+          "width=500,height=550"
+        );
+      } else {
+        chatWindow.focus();
+      }
+    }
+  </script>
+
+</body>
+</html>
