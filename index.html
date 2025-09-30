@@ -45,23 +45,6 @@
       user-select: none;
     }
     .btn:hover { background: var(--unimed-green-dark); }
-    .grid {
-      display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      align-items: start;
-      justify-items: center;
-    }
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.06);
-      text-align: left;
-      width: 100%;
-    }
-    .card h2 { margin: 0 0 8px; font-size: 18px; }
-    .card p  { margin: 0 0 16px; color: #333; }
     #div_chatbot {
       position: fixed;
       z-index: 100000;
@@ -91,24 +74,16 @@
 
   <main>
     <h1>Atendimento Digital</h1>
-    <p>Escolha como deseja iniciar o atendimento:</p>
+    <p>Clique para abrir o chat em uma <b>nova aba</b> usando o widget UC2B.</p>
 
-    <div class="grid" role="list">
-      <section class="card" role="listitem" aria-labelledby="card-alice-title">
-        <h2 id="card-alice-title">Falar com a Alice</h2>
-        <p>Clique para abrir o fluxo da Alice.</p>
-        <a
-          class="btn"
-          href="javascript:void(0);"
-          id="btn-alice"
-        >Abrir chat da Alice</a>
-      </section>
-    </div>
+    <p>
+      <a class="btn" href="javascript:void(0);" id="btn-alice">Abrir chat da Alice</a>
+    </p>
   </main>
 
-  <!-- Lara fixa no canto -->
+  <!-- Lara fixa no canto que abre em nova aba -->
   <div id="div_chatbot">
-    <a href="javascript:void(0);" id="btn-lara">
+    <a href="javascript:void(0);" id="btn-lara" aria-label="Abrir chat da Lara em nova aba">
       <img
         src="https://www.unimed.coop.br/site/documents/4195185/0/lara.png/28fd2d03-20d4-cba3-0117-f8d2f6446082?t=1649783866815"
         alt="Lara - Assistente virtual"
@@ -117,10 +92,39 @@
   </div>
 
   <footer>
-    <span>© Unimed • Ambiente de testes do widget de chat</span>
+    <span>© Unimed • Ambiente de testes do chat UC2B</span>
   </footer>
 
-  <!-- Loader oficial do UC2BChat -->
+  <script>
+    /**
+     * Abre uma NOVA ABA (about:blank), injeta o UC2BChat e seta o flow informado.
+     * Mantém fallback para tentar abrir o widget se não houver API explícita.
+     */
+    function openChatInNewTabWithUC2B(flowId) {
+      // Abre a nova aba no clique do usuário (evita bloqueio de pop-up)
+      var w = window.open('about:blank', '_blank');
+      if (!w) {
+        alert('Seu navegador bloqueou a nova aba. Permita pop-ups para este site.');
+        return;
+      }
+
+      // HTML que será injetado na nova aba
+      var html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Unimed</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:20px; }
+    .status { font-size:14px; color:#444; }
+  </style>
+</head>
+<body>
+  <h2>Carregando atendimento…</h2>
+  <p class="status">Aguarde um instante enquanto iniciamos o chat.</p>
+
+  <!-- Loader oficial UC2BChat -->
   <script>
     (function(w, d, s, u) {
       w.UC2BChat = function(c) { w.UC2BChat._.push(c) };
@@ -131,95 +135,109 @@
       j.src = "https://unimedomni.cloudcanal.com.br/livechat/livechat.min.js?_=201903270000";
       h.parentNode.insertBefore(j, h);
     })(window, document, 'script', "https://unimedomni.cloudcanal.com.br/livechat");
-  </script>
+  <\/script>
 
   <script>
-    function openChatWithFlow(flowId) {
-      if (!window.UC2BChat || typeof window.UC2BChat !== 'function') {
-        console.warn('UC2BChat não está pronto ainda. Tentando novamente em 200ms…');
-        return setTimeout(function(){ openChatWithFlow(flowId); }, 200);
-      }
-
-      UC2BChat(function () {
-        try {
-          if (typeof this.setLinkedToFlow === 'function') {
-            this.setLinkedToFlow(flowId);
-            console.log('Flow setado:', flowId);
-          }
-
-          if (typeof this.openChat === 'function') {
-            this.openChat();
-            console.log('openChat() chamado');
-            return;
-          }
-          if (typeof this.toggle === 'function') {
-            this.toggle(true);
-            console.log('toggle(true) chamado');
-            return;
-          }
-          if (typeof this.show === 'function') {
-            this.show();
-            console.log('show() chamado');
-            return;
-          }
-          if (typeof this.setOpened === 'function') {
-            this.setOpened(true);
-            console.log('setOpened(true) chamado');
-            return;
-          }
-
-          // --- Fallback robusto ---
-          setTimeout(function () {
-            var tries = 0;
-            var interval = setInterval(function () {
-              tries++;
-              var selectors = [
-                '.uc2b-launcher',
-                '[data-uc2bchat-launcher]',
-                '#uc2b-launcher',
-                '.livechat-launcher',
-                '[aria-label="Abrir chat"]',
-                'button[title*="Chat"]',
-                'button[aria-label*="Chat"]'
-              ];
-              var btn = null;
-              for (var i = 0; i < selectors.length; i++) {
-                btn = document.querySelector(selectors[i]);
-                if (btn) break;
-              }
-              if (btn) {
-                btn.click();
-                console.log('Fallback: clique no launcher via', selectors[i]);
-                clearInterval(interval);
-              }
-              if (tries > 20) {
-                clearInterval(interval);
-                console.warn('Fallback: launcher não encontrado após várias tentativas.');
-              }
-            }, 200);
-          }, 200);
-
-        } catch (e) {
-          console.error('Erro ao abrir o chat:', e);
+    // Tenta configurar o flow e abrir o widget com vários métodos.
+    (function initChat(flowId){
+      function tryOpen() {
+        if (!window.UC2BChat || typeof window.UC2BChat !== 'function') {
+          return setTimeout(tryOpen, 200);
         }
-      });
+        UC2BChat(function () {
+          try {
+            if (typeof this.setLinkedToFlow === 'function') {
+              this.setLinkedToFlow(flowId);
+              console.log('Flow setado:', flowId);
+            } else {
+              console.warn('setLinkedToFlow não disponível.');
+            }
+
+            if (typeof this.openChat === 'function') {
+              this.openChat();  // alguns widgets expõem isso
+              console.log('openChat() chamado');
+              return;
+            }
+            if (typeof this.toggle === 'function') {
+              this.toggle(true); // abre se estiver fechado
+              console.log('toggle(true) chamado');
+              return;
+            }
+            if (typeof this.show === 'function') {
+              this.show();
+              console.log('show() chamado');
+              return;
+            }
+            if (typeof this.setOpened === 'function') {
+              this.setOpened(true);
+              console.log('setOpened(true) chamado');
+              return;
+            }
+
+            // Fallback robusto: tenta achar/acionar um launcher por alguns segundos
+            setTimeout(function () {
+              var tries = 0;
+              var interval = setInterval(function () {
+                tries++;
+                var selectors = [
+                  '.uc2b-launcher',
+                  '[data-uc2bchat-launcher]',
+                  '#uc2b-launcher',
+                  '.livechat-launcher',
+                  '[aria-label="Abrir chat"]',
+                  'button[title*="Chat"]',
+                  'button[aria-label*="Chat"]'
+                ];
+                var btn = null, used = null;
+                for (var i = 0; i < selectors.length; i++) {
+                  btn = document.querySelector(selectors[i]);
+                  if (btn) { used = selectors[i]; break; }
+                }
+                if (btn) {
+                  btn.click();
+                  console.log('Fallback: clique no launcher via', used);
+                  clearInterval(interval);
+                }
+                if (tries > 20) {
+                  clearInterval(interval);
+                  console.warn('Fallback: launcher não encontrado após várias tentativas.');
+                }
+              }, 200);
+            }, 200);
+
+          } catch (e) {
+            console.error('Erro ao abrir o chat:', e);
+          }
+        });
+      }
+      tryOpen();
+    })('${flowId}');
+  <\/script>
+</body>
+</html>
+      `;
+
+      // injeta o HTML na nova aba
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
     }
 
-    // Mapear botões
-    (function bindUI(){
+    // Ligações dos botões
+    (function bindUI() {
       var btnAlice = document.getElementById('btn-alice');
       var btnLara  = document.getElementById('btn-lara');
 
       if (btnAlice) {
         btnAlice.addEventListener('click', function (e) {
           e.preventDefault();
-          openChatWithFlow('68a46e661790425f4016a228'); // Flow da Alice
+          openChatInNewTabWithUC2B('68a46e661790425f4016a228'); // Alice
         });
       }
       if (btnLara) {
         btnLara.addEventListener('click', function (e) {
           e.preventDefault();
-          openChatWithFlow('673f883adc527a52ff1ae5c9'); // Flow da Lara
+          openChatInNewTabWithUC2B('673f883adc527a52ff1ae5c9'); // Lara
         });
       }
     })();
