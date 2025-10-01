@@ -74,14 +74,14 @@
 
   <main>
     <h1>Atendimento Digital</h1>
-    <p>Clique para abrir o chat em <b>pop-up</b> usando o widget UC2B.</p>
+    <p>Clique para abrir o chat em <b>pop-up</b> (UC2B), já com o fluxo configurado.</p>
 
     <p>
       <a class="btn" href="javascript:void(0);" id="btn-alice">Abrir chat da Alice</a>
     </p>
   </main>
 
-  <!-- Lara fixa no canto que abre em pop-up -->
+  <!-- Lara fixa no canto (abre em pop-up) -->
   <div id="div_chatbot">
     <a href="javascript:void(0);" id="btn-lara" aria-label="Abrir chat da Lara em pop-up">
       <img
@@ -97,20 +97,36 @@
 
   <script>
     /**
-     * Abre uma janela pop-up (500x600) e injeta o UC2BChat com o flow correto.
+     * Abre uma janela pop-up (500x800) centralizada e injeta o UC2BChat com o flow informado.
+     * Força widgets injetados (ex.: rocketchat-widget) a iniciar com data-state="closed".
      */
     function openChatInPopupWithUC2B(flowId) {
-      var w = window.open(
-        'about:blank',
-        'chat_window',
-        'width=500,height=600,resizable=yes,scrollbars=yes'
-      );
+      var width  = 500;
+      var height = 800;
+
+      // Centralização simples
+      var screenW = (window.screen && window.screen.width)  ? window.screen.width  : 1024;
+      var screenH = (window.screen && window.screen.height) ? window.screen.height : 768;
+      var left = Math.max(0, Math.round((screenW - width) / 2));
+      var top  = Math.max(0, Math.round((screenH - height) / 2));
+
+      var features = [
+        'width=' + width,
+        'height=' + height,
+        'left=' + left,
+        'top=' + top,
+        'resizable=yes',
+        'scrollbars=yes'
+      ].join(',');
+
+      var w = window.open('about:blank', 'chat_window_uc2b', features);
 
       if (!w) {
         alert('Seu navegador bloqueou o pop-up. Permita pop-ups para este site.');
         return;
       }
 
+      // HTML injetado no pop-up (sem h2 "Carregando atendimento…")
       var html = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -118,12 +134,25 @@
   <meta charset="UTF-8">
   <title>Chat Unimed</title>
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:20px; }
-    h2 { color:#008542; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: grid;
+      place-items: center;
+      background: #ffffff;
+      color: #111;
+    }
+    .container {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
   </style>
 </head>
 <body>
-  <h2>Carregando atendimento…</h2>
+  <div class="container" aria-live="polite" aria-busy="true"></div>
 
   <!-- Loader oficial UC2BChat -->
   <script>
@@ -139,20 +168,52 @@
   <\/script>
 
   <script>
-    // Configura o flow quando o widget carregar
+    // Força qualquer widget injetado a iniciar fechado (data-state="closed")
+    (function forceWidgetClosed(){
+      function setClosed(el){
+        try { el.setAttribute('data-state', 'closed'); } catch(e) {}
+      }
+      // Varredura inicial
+      document.querySelectorAll('.rocketchat-widget,[data-state]').forEach(setClosed);
+      // Observa novas inserções de nós e ajusta
+      var obs = new MutationObserver(function(muts){
+        muts.forEach(function(m){
+          m.addedNodes.forEach(function(n){
+            if (n && n.nodeType === 1) {
+              if (n.matches && (n.matches('.rocketchat-widget') || n.hasAttribute('data-state'))) {
+                setClosed(n);
+              }
+              if (n.querySelectorAll) {
+                n.querySelectorAll('.rocketchat-widget,[data-state]').forEach(setClosed);
+              }
+            }
+          });
+        });
+      });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    })();
+
+    // Configura apenas o flow; não abrimos o chat automaticamente
     (function initChat(flowId){
-      function tryOpen() {
+      function waitAndSet() {
         if (!window.UC2BChat || typeof window.UC2BChat !== 'function') {
-          return setTimeout(tryOpen, 200);
+          return setTimeout(waitAndSet, 200);
         }
         UC2BChat(function () {
-          if (typeof this.setLinkedToFlow === 'function') {
-            this.setLinkedToFlow(flowId);
-            console.log("Flow setado:", flowId);
+          try {
+            if (typeof this.setLinkedToFlow === 'function') {
+              this.setLinkedToFlow(flowId);
+              console.log('Flow configurado:', flowId);
+            } else {
+              console.warn('setLinkedToFlow não disponível na instância UC2BChat.');
+            }
+            // NÃO chamar openChat/toggle/show: manter fechado por padrão
+          } catch(e) {
+            console.error('Erro ao configurar o flow:', e);
           }
         });
       }
-      tryOpen();
+      waitAndSet();
     })('${flowId}');
   <\/script>
 </body>
